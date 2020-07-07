@@ -8,7 +8,7 @@ using CommonGames.Utilities;
 using UnityEngine;
 
 using JetBrains.Annotations;
-
+using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -165,8 +165,8 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
 
             SetLastErrorCount();
 
-            OnNewErrorsEvent(__currErrorCount - __lasErrorCount);
-            //SpawnUnidys(unidyCount: CurrErrorCount  - LastErrorCount);
+            //OnNewErrorsEvent(__currErrorCount - __lasErrorCount);
+            SpawnUnidys(unidyCount: __currErrorCount - __lasErrorCount);
         }
 
         SetLastErrorCount();
@@ -217,10 +217,11 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
         return __errorCounter;
     }
 
-    private void SetLastErrorCount()
-    {
-        LastErrorCount = CurrErrorCount;
-    }
+    /// <summary>
+    /// Sets the <see cref="LastErrorCount"/> to the <see cref="CurrErrorCount"/>.
+    /// (For comparison with the next error count)
+    /// </summary>
+    private void SetLastErrorCount() => LastErrorCount = CurrErrorCount;
 
     /// <returns> Whether the file has changed or not. </returns>
     private bool HasFileChanged() => !GetFileHash().SequenceEqual(second: OldHash);
@@ -253,16 +254,29 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
         }
     }
     
+    private readonly Vector3 _screenCenter = new Vector3(x: Screen.width / 2f, y: Screen.height / 2f);
     private void SpawnUnidys(in int unidyCount)
     {
         //Debug.Log($"amount of new Unidys is {unidyCount}");
-        LastErrorCount = CurrErrorCount;
 
-        if(unidyPrefab != null)
+        //for(int i = 0; i < unidyCount; i++)
+
+        if(unidyPrefab == null)
         {
-            GameObject.Instantiate(unidyPrefab);
-            Debug.Log("FOR THE LOVE OF GOD... SPAWN!");
+            Debug.LogWarning("unidyPrefab is NULL");
+            return;
         }
+        
+        Debug.Log(message: "<i> Get Position </i>");
+        
+        //Vector3 __position = TransparentWindow.Camera.ScreenToWorldPoint(position: _screenCenter); //Input.mousePosition);
+        Vector3 __position = Vector3.zero;
+
+        Debug.Log(message: "<i> Pre-Spawn </i>");
+            
+        Object.Instantiate(original: unidyPrefab, __position, rotation: Quaternion.identity);
+            
+        Debug.Log(message: "<b> - <i> SPAWN! </i> - </b>");
     }
     
     #endregion
