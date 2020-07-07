@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class RagdollController : MonoBehaviour
 {
-    [SerializeField] GameObject leftHandIk, rightHandIk, leftFootIk, rightFootIk;
-    [SerializeField] Animator animator;
+    [SerializeField] private GameObject leftHandIk, rightHandIk, leftFootIk, rightFootIk;
+    [SerializeField] private Animator animator;
     public bool RagdollActive { get; private set; }
 
     private HingeJoint2D[] joints;
@@ -29,7 +28,7 @@ public class RagdollController : MonoBehaviour
         DisableRagdoll();
     }
 
-    void RecordTransform()
+    private void RecordTransform()
     {
         foreach (var rb in rbs)
         {
