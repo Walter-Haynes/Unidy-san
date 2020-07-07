@@ -78,9 +78,6 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
     #endregion
     
     private const string _NULL_REFERENCE_TEXT = "NullReferenceException: ";
-    
-    //[Required]
-    [SerializeField] private GameObject unidyPrefab = null;
 
     //[OdinSerialize]
     private int LastErrorCount { get; set; } = 0;
@@ -165,8 +162,7 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
 
             SetLastErrorCount();
 
-            //OnNewErrorsEvent(__currErrorCount - __lasErrorCount);
-            SpawnUnidys(unidyCount: __currErrorCount - __lasErrorCount);
+            OnNewErrorsEvent(__currErrorCount - __lasErrorCount);
         }
 
         SetLastErrorCount();
@@ -253,31 +249,6 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
                 ;
         }
     }
-    
-    private readonly Vector3 _screenCenter = new Vector3(x: Screen.width / 2f, y: Screen.height / 2f);
-    private void SpawnUnidys(in int unidyCount)
-    {
-        //Debug.Log($"amount of new Unidys is {unidyCount}");
 
-        //for(int i = 0; i < unidyCount; i++)
-
-        if(unidyPrefab == null)
-        {
-            Debug.LogWarning("unidyPrefab is NULL");
-            return;
-        }
-        
-        Debug.Log(message: "<i> Get Position </i>");
-        
-        //Vector3 __position = TransparentWindow.Camera.ScreenToWorldPoint(position: _screenCenter); //Input.mousePosition);
-        Vector3 __position = Vector3.zero;
-
-        Debug.Log(message: "<i> Pre-Spawn </i>");
-            
-        Object.Instantiate(original: unidyPrefab, __position, rotation: Quaternion.identity);
-            
-        Debug.Log(message: "<b> - <i> SPAWN! </i> - </b>");
-    }
-    
     #endregion
 }
