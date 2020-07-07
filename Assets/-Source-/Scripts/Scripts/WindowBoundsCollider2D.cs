@@ -1,63 +1,60 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 public class WindowBoundsCollider2D : MonoBehaviour
 {
-	new Camera camera;
-	EdgeCollider2D borderCollider;
+	private Camera _camera;
+	private EdgeCollider2D _borderCollider;
 
 	[Tooltip("Camera-relative size of the bounds (1 = full window, 0.5 = half). Useful for safe-areas")] [SerializeField]
-	float scale = 1f;
+	private float scale = 1f;
 
 	[Tooltip("A larger radius helps prevent fast-moving objects from clipping through")] [SerializeField]
-	float edgeRadius = 10f;
+	private float edgeRadius = 10f;
 
-	void Start()
+	private void Start()
 	{
 		CreateCollider();
 	}
 
-	void CreateCollider()
+	private void CreateCollider()
 	{
-		camera = GetComponent<Camera>();
-		borderCollider = gameObject.AddComponent<EdgeCollider2D>();
+		_camera = GetComponent<Camera>();
+		_borderCollider = gameObject.AddComponent<EdgeCollider2D>();
 
-		var cameraPlane = camera.orthographic ? 0 : -camera.transform.position.z;
-		borderCollider.edgeRadius = edgeRadius;
+		float __cameraPlane = _camera.orthographic ? 0 : -_camera.transform.position.z;
+		_borderCollider.edgeRadius = edgeRadius;
 
-		var maxScale = scale;
-		var minScale = 1f - scale;
-		borderCollider.points = new[]
+		float __maxScale = scale;
+		float __minScale = 1f - scale;
+		_borderCollider.points = new[]
 		{
-			(Vector2) camera.ViewportToWorldPoint(new Vector3(minScale, minScale, cameraPlane)) + new Vector2(-edgeRadius, -edgeRadius),
-			(Vector2) camera.ViewportToWorldPoint(new Vector3(minScale, maxScale, cameraPlane)) + new Vector2(-edgeRadius, edgeRadius),
-			(Vector2) camera.ViewportToWorldPoint(new Vector3(maxScale, maxScale, cameraPlane)) + new Vector2(edgeRadius, edgeRadius),
-			(Vector2) camera.ViewportToWorldPoint(new Vector3(maxScale, minScale, cameraPlane)) + new Vector2(edgeRadius, -edgeRadius),
-			(Vector2) camera.ViewportToWorldPoint(new Vector3(minScale, minScale, cameraPlane)) + new Vector2(-edgeRadius, -edgeRadius),
+			(Vector2) _camera.ViewportToWorldPoint(new Vector3(__minScale, __minScale, __cameraPlane)) + new Vector2(-edgeRadius, -edgeRadius),
+			(Vector2) _camera.ViewportToWorldPoint(new Vector3(__minScale, __maxScale, __cameraPlane)) + new Vector2(-edgeRadius, edgeRadius),
+			(Vector2) _camera.ViewportToWorldPoint(new Vector3(__maxScale, __maxScale, __cameraPlane)) + new Vector2(edgeRadius, edgeRadius),
+			(Vector2) _camera.ViewportToWorldPoint(new Vector3(__maxScale, __minScale, __cameraPlane)) + new Vector2(edgeRadius, -edgeRadius),
+			(Vector2) _camera.ViewportToWorldPoint(new Vector3(__minScale, __minScale, __cameraPlane)) + new Vector2(-edgeRadius, -edgeRadius),
 		};
 	}
 
-	void OnDrawGizmosSelected()
+	private void OnDrawGizmosSelected()
 	{
-		var maxScale = scale;
-		var minScale = 1f - scale;
+		float __maxScale = scale;
+		float __minScale = 1f - scale;
 
-		if (!camera)
+		if (!_camera)
 		{
-			camera = GetComponent<Camera>();
+			_camera = GetComponent<Camera>();
 		}
 
-		var cameraPlane = camera.orthographic ? 0 : -camera.transform.position.z;
-		var pointA = camera.ViewportToWorldPoint(new Vector3(minScale, minScale, cameraPlane));
-		var pointB = camera.ViewportToWorldPoint(new Vector3(minScale, maxScale, cameraPlane));
-		var pointC = camera.ViewportToWorldPoint(new Vector3(maxScale, maxScale, cameraPlane));
-		var pointD = camera.ViewportToWorldPoint(new Vector3(maxScale, minScale, cameraPlane));
-		Gizmos.DrawLine(pointA, pointB);
-		Gizmos.DrawLine(pointB, pointC);
-		Gizmos.DrawLine(pointC, pointD);
-		Gizmos.DrawLine(pointD, pointA);
+		float __cameraPlane = _camera.orthographic ? 0 : -_camera.transform.position.z;
+		Vector3 __pointA = _camera.ViewportToWorldPoint(new Vector3(__minScale, __minScale, __cameraPlane));
+		Vector3 __pointB = _camera.ViewportToWorldPoint(new Vector3(__minScale, __maxScale, __cameraPlane));
+		Vector3 __pointC = _camera.ViewportToWorldPoint(new Vector3(__maxScale, __maxScale, __cameraPlane));
+		Vector3 __pointD = _camera.ViewportToWorldPoint(new Vector3(__maxScale, __minScale, __cameraPlane));
+		Gizmos.DrawLine(__pointA, __pointB);
+		Gizmos.DrawLine(__pointB, __pointC);
+		Gizmos.DrawLine(__pointC, __pointD);
+		Gizmos.DrawLine(__pointD, __pointA);
 	}
 }

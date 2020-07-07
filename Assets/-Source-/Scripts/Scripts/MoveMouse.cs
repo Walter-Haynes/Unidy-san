@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MoveMouse : MonoBehaviour
 {
@@ -9,9 +7,9 @@ public class MoveMouse : MonoBehaviour
 	/// The logic is the same as moving a 2D object, though the y-axis is reversed (y-down rather than Unity's y-up)
 	/// </summary>
 	
-	[SerializeField] float moveSpeed = 500f;
+	[SerializeField] private float moveSpeed = 500f;
 
-	void Update()
+	private void Update()
 	{
 		float delta = Time.deltaTime * moveSpeed;
 

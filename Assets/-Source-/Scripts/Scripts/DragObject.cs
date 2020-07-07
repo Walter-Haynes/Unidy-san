@@ -1,55 +1,42 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class DragObject : MonoBehaviour
 {
-	[Tooltip("What GameObject layers should the click query against?")] [SerializeField]
-	LayerMask clickLayerMask = ~0;
+	[Tooltip("What GameObject layers should the click query against?")] 
+	[SerializeField] private LayerMask clickLayerMask = ~0;
 
-	TargetJoint2D joint;
+	private TargetJoint2D _joint;
 
-	void Update()
+	private void Update()
 	{
 		if (!Input.GetMouseButton(0))
 		{
-			if (joint)
-			{
-				Destroy(joint);
-				joint = null;
-			}
+			if(!_joint) return;
+			
+			Destroy(_joint);
+			_joint = null;
 
 			return;
 		}
 
-		Vector2 pos = TransparentWindow.Camera.ScreenToWorldPoint(Input.mousePosition);
+		Vector2 __pos = TransparentWindow.Camera.ScreenToWorldPoint(Input.mousePosition);
 
-		if (joint)
+		if (_joint)
 		{
-			joint.target = pos;
+			_joint.target = __pos;
 			return;
 		}
 
-		if (!Input.GetMouseButtonDown(0))
-		{
-			return;
-		}
+		if (!Input.GetMouseButtonDown(0)) return;
 
-		var overlapCollider = Physics2D.OverlapPoint(pos, clickLayerMask);
-		if (!overlapCollider)
-		{
-			return;
-		}
+		Collider2D __overlapCollider = Physics2D.OverlapPoint(__pos, clickLayerMask);
+		if (!__overlapCollider) return;
 
-		var attachedRigidbody = overlapCollider.attachedRigidbody;
-		if (!attachedRigidbody)
-		{
-			return;
-		}
+		Rigidbody2D __attachedRigidbody = __overlapCollider.attachedRigidbody;
+		if (!__attachedRigidbody) return;
 
-		joint = attachedRigidbody.gameObject.AddComponent<TargetJoint2D>();
-		joint.autoConfigureTarget = false;
-		joint.anchor = attachedRigidbody.transform.InverseTransformPoint(pos);
+		_joint = __attachedRigidbody.gameObject.AddComponent<TargetJoint2D>();
+		_joint.autoConfigureTarget = false;
+		_joint.anchor = __attachedRigidbody.transform.InverseTransformPoint(__pos);
 	}
 }

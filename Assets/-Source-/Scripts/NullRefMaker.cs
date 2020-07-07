@@ -10,7 +10,7 @@ public class NullRefMaker : MonoBehaviour
     
     //[Button]
     [ContextMenu("Create Error")]
-    void CreateNullReferenceException()
+    private void CreateNullReferenceException()
     {
         string __bla = _gameObject.name;
     }

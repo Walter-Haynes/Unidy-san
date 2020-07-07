@@ -8,6 +8,11 @@ using CommonGames.Utilities;
 using UnityEngine;
 
 using JetBrains.Annotations;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 //using Sirenix.OdinInspector;
 //using Sirenix.Serialization;
 
@@ -138,6 +143,8 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
 
     private void OnEditorLogChanged(object sender, FileSystemEventArgs eventArgs)
     {
+        //if(!IsPlaying) return;
+
         //Checks if the file that has changed is 'Editor.log'
         if(!eventArgs.Name.EndsWith(value: "Editor.log")) return;
 
@@ -183,7 +190,6 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
         
         return Regex.Matches(__text, pattern: _NULL_REFERENCE_TEXT).Count;
     }
-    
     private int? ReadAndCountErrors()
     {
         if(!File.Exists(EditorLog))
@@ -233,6 +239,18 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
     protected virtual void OnNewErrorsEvent(in int errors)
     {
         NewErrors_Event?.Invoke(errors);
+    }
+
+    private static bool IsPlaying
+    {
+        get
+        {
+            return Application.isPlaying 
+                #if UNITY_EDITOR
+                   || EditorApplication.isPlaying 
+                #endif
+                ;
+        }
     }
     
     private void SpawnUnidys(in int unidyCount)
