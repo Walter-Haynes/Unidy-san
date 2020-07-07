@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 
-using Sirenix.OdinInspector;
-
 public class UnidySpawner : MonoBehaviour
 {
-    [Required]
+    //[Required]
     [SerializeField] private GameObject unidyPrefab = null;
     
     private void Start()
@@ -15,14 +13,25 @@ public class UnidySpawner : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        if(ErrorCatcher.InstanceExists)
+        {
+            ErrorCatcher.Instance.NewErrors_Event -= SpawnUnidys;
+        }
+    }
+
     private void SpawnUnidys(int unidyCount)
     {
-        Debug.Log($"amount of new Unidys is {unidyCount}");
+        //Debug.Log($"amount of new Unidys is {unidyCount}");
         
-        for(int __index = 0; __index < unidyCount; __index++)
+        Debug.Log("<b> - <i> SPAWN! </i> - </b>");
+
+        //for(int i = 0; i < unidyCount; i++)
+
+        if(unidyPrefab != null)
         {
-            Debug.Log("SPAWN!@");
-            Instantiate(unidyPrefab);
+            Object.Instantiate(original: unidyPrefab, position: Vector3.zero, rotation: Quaternion.identity);   
         }
     }
 }

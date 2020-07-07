@@ -1,20 +1,26 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+
 using CommonGames.Utilities;
 using UnityEngine;
 
 using JetBrains.Annotations;
-using Sirenix.Serialization;
+//using Sirenix.OdinInspector;
+//using Sirenix.Serialization;
 
 public class ErrorCatcher : Singleton<ErrorCatcher>
 {
+    #region Variables
+    
     #region Paths
 
     // ReSharper disable once InconsistentNaming
     private string _Internal_EditorPath = null;
     [PublicAPI]
-    public string EditorPath
+    public string EditorPath //AppData/Local/Unity/Editor/
     {
         get
         {
@@ -29,7 +35,7 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
     // ReSharper disable once InconsistentNaming
     private string _Internal_EditorLog = null;
     [PublicAPI]
-    public string EditorLog
+    public string EditorLog //AppData/Local/Unity/Editor/Editor.log
     {
         get
         {
@@ -42,7 +48,7 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
     // ReSharper disable once InconsistentNaming
     private string _Internal_EditorLogCopy = null;
     [PublicAPI]
-    public string EditorLogCopy
+    public string EditorLogCopy //AppData/Local/Unity/Editor/EditorCopy.log
     {
         get
         {
@@ -53,36 +59,110 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
     }
 
     #endregion
+
+    #region File Hash
+
+    // ReSharper disable once InconsistentNaming
+    private byte[] Internal_OldHash { get; set; }
+    private byte[] OldHash
+    {
+        get => Internal_OldHash ?? (Internal_OldHash = GetFileHash());
+        set => Internal_OldHash = value;
+    }
+
+    #endregion
     
     private const string _NULL_REFERENCE_TEXT = "NullReferenceException: ";
+    
+    //[Required]
+    [SerializeField] private GameObject unidyPrefab = null;
 
-    [OdinSerialize]
+    //[OdinSerialize]
     private int LastErrorCount { get; set; } = 0;
     
-    [OdinSerialize]
+    //[OdinSerialize]
     private int CurrErrorCount { get; set; } = 0;
 
     public event Action<int> NewErrors_Event;
+
+    private FileSystemWatcher _fileSystemWatcher = null; 
+    
+    #endregion
+
+    #region Methods
 
     private void Start()
     {
         int? __initialErrors = CopyAndCountErrors();
 
         LastErrorCount = __initialErrors ?? CurrErrorCount;
+        //OldHash = GetFileHash();
+        
+        LateStart();
     }
 
-    private void Update()
+    private void LateStart()
     {
-        if (Time.frameCount % 10 != 0) return;
+        if(!File.Exists(EditorLog))
+        {
+            Debug.LogError($"File {EditorLog} doesn't exist!");
+            
+            return;
+        }
 
-        CurrErrorCount = CopyAndCountErrors() ?? CurrErrorCount;
+        if(_fileSystemWatcher != null)
+        {
+            _fileSystemWatcher.Changed -= OnEditorLogChanged;   
+        }
 
+        _fileSystemWatcher = new FileSystemWatcher { Path = EditorPath };
+
+        _fileSystemWatcher.Changed += OnEditorLogChanged;
+        
+        _fileSystemWatcher.EnableRaisingEvents = true;
+    }
+
+    private void ResetOnChangedSubscriptions()
+    {
+        if(_fileSystemWatcher != null)
+        {
+            _fileSystemWatcher.Changed -= OnEditorLogChanged;    
+            //_fileSystemWatcher.Changed = null;
+        }
+    }
+
+    private void OnDisable()
+    {
+        
+    }
+
+    private void OnEditorLogChanged(object sender, FileSystemEventArgs eventArgs)
+    {
+        //Checks if the file that has changed is 'Editor.log'
+        if(!eventArgs.Name.EndsWith(value: "Editor.log")) return;
+
+        int? __errorCount = CopyAndCountErrors();
+        if(__errorCount == null) return;
+        
+        CurrErrorCount = (int)__errorCount;
+        
+        Debug.Log(message: "\n" +
+            $"<color=cyan>Current Errors: {CurrErrorCount} </color> \n" +
+            $"<color=cyan>Last Errors: {LastErrorCount} </color> \n" +
+            $"<color={(CurrErrorCount > LastErrorCount ? "lime" : "orange")}>Current is {(CurrErrorCount > LastErrorCount ? "More" : "Less or Equal")} than before. </color>");
+        
         if(CurrErrorCount > LastErrorCount)
         {
-            OnNewErrorsEvent(CurrErrorCount - LastErrorCount);    
+            int __lasErrorCount = LastErrorCount;
+            int __currErrorCount = CurrErrorCount;
+
+            SetLastErrorCount();
+
+            OnNewErrorsEvent(__currErrorCount - __lasErrorCount);
+            //SpawnUnidys(unidyCount: CurrErrorCount  - LastErrorCount);
         }
-        
-        LastErrorCount = CurrErrorCount;
+
+        SetLastErrorCount();
     }
 
     private int? CopyAndCountErrors()
@@ -114,7 +194,7 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
         }
         
         StreamReader __file = new StreamReader(path: EditorLog);
-        string __line = "";
+        string __line;
 
         int __errorCounter = 0;
 
@@ -131,10 +211,41 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
         return __errorCounter;
     }
 
+    private void SetLastErrorCount()
+    {
+        LastErrorCount = CurrErrorCount;
+    }
+
+    /// <returns> Whether the file has changed or not. </returns>
+    private bool HasFileChanged() => !GetFileHash().SequenceEqual(second: OldHash);
+
+    private byte[] GetFileHash()
+    {
+        HashAlgorithm __sha1 = HashAlgorithm.Create();
+        using(FileStream __stream = new FileStream(EditorLog, FileMode.Open, FileAccess.Read))
+        {
+            return __sha1.ComputeHash(__stream);
+        }
+    }
+
     /// <summary> Called when there are new errors detected. </summary>
     /// <param name="errors"> amount of new errors. </param>
-    protected virtual void OnNewErrorsEvent(int errors)
+    protected virtual void OnNewErrorsEvent(in int errors)
     {
         NewErrors_Event?.Invoke(errors);
     }
+    
+    private void SpawnUnidys(in int unidyCount)
+    {
+        //Debug.Log($"amount of new Unidys is {unidyCount}");
+        LastErrorCount = CurrErrorCount;
+
+        if(unidyPrefab != null)
+        {
+            GameObject.Instantiate(unidyPrefab);
+            Debug.Log("FOR THE LOVE OF GOD... SPAWN!");
+        }
+    }
+    
+    #endregion
 }
