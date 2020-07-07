@@ -8,7 +8,7 @@ using CommonGames.Utilities;
 using UnityEngine;
 
 using JetBrains.Annotations;
-
+using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -78,9 +78,6 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
     #endregion
     
     private const string _NULL_REFERENCE_TEXT = "NullReferenceException: ";
-    
-    //[Required]
-    [SerializeField] private GameObject unidyPrefab = null;
 
     //[OdinSerialize]
     private int LastErrorCount { get; set; } = 0;
@@ -166,7 +163,6 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
             SetLastErrorCount();
 
             OnNewErrorsEvent(__currErrorCount - __lasErrorCount);
-            //SpawnUnidys(unidyCount: CurrErrorCount  - LastErrorCount);
         }
 
         SetLastErrorCount();
@@ -217,10 +213,11 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
         return __errorCounter;
     }
 
-    private void SetLastErrorCount()
-    {
-        LastErrorCount = CurrErrorCount;
-    }
+    /// <summary>
+    /// Sets the <see cref="LastErrorCount"/> to the <see cref="CurrErrorCount"/>.
+    /// (For comparison with the next error count)
+    /// </summary>
+    private void SetLastErrorCount() => LastErrorCount = CurrErrorCount;
 
     /// <returns> Whether the file has changed or not. </returns>
     private bool HasFileChanged() => !GetFileHash().SequenceEqual(second: OldHash);
@@ -252,18 +249,6 @@ public class ErrorCatcher : Singleton<ErrorCatcher>
                 ;
         }
     }
-    
-    private void SpawnUnidys(in int unidyCount)
-    {
-        //Debug.Log($"amount of new Unidys is {unidyCount}");
-        LastErrorCount = CurrErrorCount;
 
-        if(unidyPrefab != null)
-        {
-            GameObject.Instantiate(unidyPrefab);
-            Debug.Log("FOR THE LOVE OF GOD... SPAWN!");
-        }
-    }
-    
     #endregion
 }

@@ -1,10 +1,20 @@
 ﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class RagdollController : MonoBehaviour
 {
+    //#pragma warning disable 
+    #pragma warning disable 0649
+    
+    [UsedImplicitly]
     [SerializeField] private GameObject leftHandIk, rightHandIk, leftFootIk, rightFootIk;
+    
+    [UsedImplicitly]
     [SerializeField] private Animator animator;
+    
+    #pragma warning restore 0618
+    
     public bool RagdollActive { get; private set; }
 
     private HingeJoint2D[] joints;
