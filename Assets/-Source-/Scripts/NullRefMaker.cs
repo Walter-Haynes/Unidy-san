@@ -1,4 +1,4 @@
-﻿//using Sirenix.OdinInspector;
+﻿using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class NullRefMaker : MonoBehaviour
@@ -8,7 +8,7 @@ public class NullRefMaker : MonoBehaviour
     private GameObject _gameObject;
     #pragma warning restore 649
     
-    //[Button]
+    [Button]
     [ContextMenu("Create Error")]
     private void CreateNullReferenceException()
     {
